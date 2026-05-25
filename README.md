@@ -5,5 +5,5 @@ Run as follows:
 
 ```bash
 git clone git@github.com:avcopan/am.git
-./am/setup.sh
+./am/setup.sh  # Add -d flag when running on Sapelo2
 ```
