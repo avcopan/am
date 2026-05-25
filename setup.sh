@@ -1,10 +1,32 @@
 #!/usr/bin/env bash
 
-# Set your GitHub username here
-GITHUB_USERNAME="avcopan"
+set -euo pipefail
 
 auto_repos=("automol" "autostorage" "autoengine")
 qc_repos=("qcdata" "qccodec" "qccompute")
+
+USE_DETACHED_ENVS=false
+
+while getopts "d" opt; do
+  case "$opt" in
+    d)
+      USE_DETACHED_ENVS=true
+      ;;
+    *)
+      echo "Usage: $0 [-d]"
+      exit 1
+      ;;
+  esac
+done
+
+# Prompt for GitHub username, using git config user.name as the default
+DEFAULT_GITHUB_USERNAME="$(git config user.name)"
+if [[ -z "$DEFAULT_GITHUB_USERNAME" ]]; then
+  read -rp "GitHub username: " GITHUB_USERNAME
+else
+  read -rp "GitHub username (default: ${DEFAULT_GITHUB_USERNAME}): " GITHUB_USERNAME
+  GITHUB_USERNAME="${GITHUB_USERNAME:-$DEFAULT_GITHUB_USERNAME}"
+fi
 
 # --- Clone everything (idempotent) ---
 for repo in "${auto_repos[@]}" "${qc_repos[@]}"; do
@@ -40,13 +62,15 @@ for repo in "${auto_repos[@]}"; do
     git remote get-url upstream >/dev/null 2>&1 || \
       git remote add upstream "git@github.com:avcopan/${repo}.git"
 
-    mkdir -p .pixi
-    grep -qxF 'detached-environments = "/lscratch/'"$USER"'"' .pixi/config.toml 2>/dev/null || \
+    if [[ "$USE_DETACHED_ENVS" == true ]]; then
+      mkdir -p .pixi
+      grep -qxF 'detached-environments = "/lscratch/'"$USER"'"' .pixi/config.toml 2>/dev/null || \
         echo "detached-environments = \"/lscratch/$USER\"" >> .pixi/config.toml
 
-    mkdir -p .pixi_local_true
-    grep -qxF 'detached-environments = "/lscratch/'"$USER"'/local"' .pixi_local_true/config.toml 2>/dev/null || \
+      mkdir -p .pixi_local_true
+      grep -qxF 'detached-environments = "/lscratch/'"$USER"'/local"' .pixi_local_true/config.toml 2>/dev/null || \
         echo "detached-environments = \"/lscratch/$USER/local\"" >> .pixi_local_true/config.toml
+    fi
 
     ./scripts/local.sh stop
     pixi install
