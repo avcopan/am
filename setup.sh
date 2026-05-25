@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -uo pipefail
+
+SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+ROOT_DIR="$(realpath "${SCRIPT_DIR}/..")"
 
 auto_repos=("automol" "autostorage" "autoengine")
 qc_repos=("qcdata" "qccodec" "qccompute")
@@ -18,6 +21,14 @@ while getopts "d" opt; do
       ;;
   esac
 done
+
+# Always operate from the parent directory of this script
+cd "$ROOT_DIR"
+
+# Copy config files
+mkdir -p .vscode
+cp "${SCRIPT_DIR}/files/ty.toml" ./ty.toml
+cp "${SCRIPT_DIR}/files/settings.json" ./.vscode/settings.json
 
 # Prompt for GitHub username, using git config user.name as the default
 DEFAULT_GITHUB_USERNAME="$(git config user.name)"

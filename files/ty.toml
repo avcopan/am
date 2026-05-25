@@ -1,0 +1,2 @@
+[environment]
+python = "autoengine/.pixi/envs/dev/bin/python"
