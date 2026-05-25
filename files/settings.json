@@ -1,3 +1,4 @@
 {
-    "ty.configurationFile": "./ty.toml"
+    "ty.configurationFile": "./ty.toml",
+    "python.defaultInterpreterPath": "./autoengine/.pixi/envs/dev/bin/python"
 }
